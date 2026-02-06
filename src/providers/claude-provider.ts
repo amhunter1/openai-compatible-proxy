@@ -39,10 +39,8 @@ export class ClaudeProvider implements Provider {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01',
+        'x-api-key': config.anthropicApiKey,
       };
-
-      // Loratech uses x-api-key, Anthropic uses x-api-key too
-      headers['x-api-key'] = config.anthropicApiKey;
 
       const body: any = {
         model: claudeModel,
@@ -110,9 +108,8 @@ export class ClaudeProvider implements Provider {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01',
+        'x-api-key': config.anthropicApiKey,
       };
-
-      headers['x-api-key'] = config.anthropicApiKey;
 
       const body: any = {
         model: claudeModel,

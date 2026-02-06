@@ -1,48 +1,48 @@
-# OpenAI-Compatible Proxy - Proje Özeti
+# OpenAI-Compatible Proxy - Project Summary
 
-## 🎯 Proje Amacı
-Loratech API'deki Claude modellerini OpenAI API formatında kullanabilmek için bir proxy server.
+## 🎯 Project Purpose
+A proxy server to use Claude models (Anthropic) with OpenAI API format.
 
-## ✅ Tamamlanan Özellikler
+## ✅ Completed Features
 
-### 1. Temel Yapı
+### 1. Core Structure
 - Express.js + TypeScript
-- Modüler provider sistemi
+- Modular provider system
 - Environment-based configuration
 
 ### 2. Claude Provider
-- Loratech API entegrasyonu
+- Anthropic API integration
 - Model mapping (gpt-4 → claude-3-5-sonnet)
 - System message handling
 - Usage statistics
 
 ### 3. Streaming Support
-- SSE (Server-Sent Events) implementasyonu
+- SSE (Server-Sent Events) implementation
 - Real-time response streaming
 - Proper error handling
 
-### 4. OpenAI Uyumluluğu
+### 4. OpenAI Compatibility
 - `/v1/chat/completions` endpoint
 - OpenAI response format
 - Token usage reporting
 
-## 📁 Proje Yapısı
+## 📁 Project Structure
 
 ```
 openai-compatible-proxy/
 ├── src/
-│   ├── server.ts              # Ana server
-│   ├── types.ts               # TypeScript tipleri
+│   ├── server.ts              # Main server
+│   ├── types.ts               # TypeScript types
 │   └── providers/
 │       └── claude-provider.ts # Claude API provider
-├── dist/                      # Build çıktısı
-├── .env                       # API key ve config
+├── dist/                      # Build output
+├── .env                       # API keys and config
 ├── package.json
 ├── tsconfig.json
 └── README.md
 ```
 
-## 🚀 Kullanım
+## 🚀 Usage
 
 ### Development:
 ```bash
@@ -55,58 +55,47 @@ npm run build
 npm start
 ```
 
-### Test:
-```bash
-# Normal request
-python test-proxy.py
+## 🔧 Configuration
 
-# Streaming request
-python test-streaming.py
-```
-
-## 🔧 Yapılandırma
-
-`.env` dosyası:
+`.env` file:
 ```env
 PORT=3000
 PROVIDER=claude
 ANTHROPIC_API_KEY=your_key_here
-ANTHROPIC_BASE_URL=https://api.loratech.dev
 ```
 
-## 📊 Test Sonuçları
+## 📊 Test Results
 
-✅ Normal request: Başarılı (200 OK)
-✅ Streaming request: Başarılı
-✅ Model mapping: Çalışıyor
-✅ System messages: Çalışıyor
-✅ Usage statistics: Çalışıyor
-✅ Production build: Başarılı
+✅ Normal request: Success (200 OK)
+✅ Streaming request: Success
+✅ Model mapping: Working
+✅ System messages: Working
+✅ Usage statistics: Working
+✅ Production build: Success
 
-## 🎯 Kullanım Senaryoları
+## 🎯 Use Cases
 
-1. **OpenAI SDK ile Claude kullanımı**
-   - Mevcut OpenAI kodlarını değiştirmeden Claude'a geçiş
+1. **Use Claude with OpenAI SDK**
+   - Switch to Claude without changing existing OpenAI code
    
-2. **Tool entegrasyonu**
-   - OpenAI API bekleyen araçlarla Claude kullanımı
+2. **Tool integration**
+   - Use Claude with tools that expect OpenAI API
    
-3. **Test ve karşılaştırma**
-   - Aynı interface ile farklı modelleri test etme
+3. **Testing and comparison**
+   - Test different models with the same interface
 
-## 🔐 Güvenlik
+## 🔐 Security
 
-- API key'ler `.env` dosyasında
-- `.gitignore` ile hassas dosyalar korunuyor
-- Header-based authentication (x-api-key)
+- API keys in `.env` file
+- Sensitive files protected with `.gitignore`
+- Standard Anthropic authentication
 
-## 📝 Notlar
+## 📝 Notes
 
-- Loratech API'nin özel header formatı (`x-api-key`) kullanılıyor
-- Model isimleri OpenAI formatından Claude formatına otomatik dönüştürülüyor
-- Streaming için SSE protokolü kullanılıyor
-- TypeScript ile tip güvenliği sağlanıyor
+- Model names automatically converted from OpenAI format to Claude format
+- SSE protocol used for streaming
+- Type safety with TypeScript
 
-## 🎉 Sonuç
+## 🎉 Result
 
-Proje başarıyla tamamlandı! Loratech API'deki Claude modelleri artık OpenAI API formatında kullanılabilir.
+Project successfully completed! Claude models can now be used with OpenAI API format.

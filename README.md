@@ -1,12 +1,12 @@
-# OpenAI-Compatible Proxy for Claude (Loratech)
+# OpenAI-Compatible Proxy for Claude
 
-A lightweight proxy server that converts OpenAI API requests to Claude API format, specifically designed to work with Loratech's Claude API endpoint.
+A lightweight proxy server that converts OpenAI API requests to Claude API format (Anthropic).
 
 ## Features
 
 - ✅ OpenAI-compatible `/v1/chat/completions` endpoint
 - ✅ Streaming support
-- ✅ Works with Loratech API (`https://api.loratech.dev`)
+- ✅ Works with Anthropic Claude API
 - ✅ Model mapping (gpt-4 → claude-3-5-sonnet, etc.)
 - ✅ System message handling
 - ✅ Usage statistics
@@ -24,8 +24,8 @@ Create a `.env` file:
 ```env
 PORT=3000
 PROVIDER=claude
-ANTHROPIC_API_KEY=your_loratech_api_key_here
-ANTHROPIC_BASE_URL=https://api.loratech.dev
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_BASE_URL=https://api.anthropic.com
 ```
 
 ## Usage
@@ -85,7 +85,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 - Built with Express.js and TypeScript
 - Direct fetch-based implementation (no SDK dependencies)
-- Proper header handling for Loratech API (`x-api-key`)
+- Standard Anthropic API authentication
 - SSE (Server-Sent Events) for streaming
 
 ## License
