@@ -1,12 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { Response } from 'express';
 import { config } from '../config';
 import { Provider, OpenAIRequest, OpenAIResponse, OpenAIMessage } from '../types/provider';
-
-const anthropic = new Anthropic({
-  apiKey: config.anthropicApiKey,
-  baseURL: config.anthropicBaseUrl,
-});
 
 const mapModelName = (openaiModel: string): string => {
   const modelMap: Record<string, string> = {
@@ -17,7 +11,7 @@ const mapModelName = (openaiModel: string): string => {
   return modelMap[openaiModel] || 'claude-3-5-sonnet-20241022';
 };
 
-const convertMessages = (messages: OpenAIMessage[]): { system?: string; messages: Anthropic.MessageParam[] } => {
+const convertMessages = (messages: OpenAIMessage[]): { system?: string; messages: any[] } => {
   const systemMessages = messages.filter(m => m.role === 'system');
   const nonSystemMessages = messages.filter(m => m.role !== 'system');
 
@@ -25,7 +19,7 @@ const convertMessages = (messages: OpenAIMessage[]): { system?: string; messages
     ? systemMessages.map(m => m.content).join('\n')
     : undefined;
 
-  const claudeMessages: Anthropic.MessageParam[] = nonSystemMessages.map(msg => ({
+  const claudeMessages = nonSystemMessages.map(msg => ({
     role: msg.role === 'assistant' ? 'assistant' : 'user',
     content: msg.content,
   }));
@@ -39,16 +33,46 @@ export class ClaudeProvider implements Provider {
       const claudeModel = mapModelName(request.model);
       const { system, messages } = convertMessages(request.messages);
 
-      const response = await anthropic.messages.create({
+      const baseUrl = config.anthropicBaseUrl || 'https://api.anthropic.com';
+      const url = `${baseUrl}/v1/messages`;
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+      };
+
+      // Loratech uses x-api-key, Anthropic uses x-api-key too
+      headers['x-api-key'] = config.anthropicApiKey;
+
+      const body: any = {
         model: claudeModel,
         max_tokens: request.max_tokens || 4096,
-        temperature: request.temperature,
-        system,
         messages,
+      };
+
+      if (system) {
+        body.system = system;
+      }
+
+      if (request.temperature !== undefined) {
+        body.temperature = request.temperature;
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`${response.status} ${errorText}`);
+      }
+
+      const data: any = await response.json();
+
       const openaiResponse: OpenAIResponse = {
-        id: response.id,
+        id: data.id,
         object: 'chat.completion',
         created: Math.floor(Date.now() / 1000),
         model: request.model,
@@ -57,15 +81,15 @@ export class ClaudeProvider implements Provider {
             index: 0,
             message: {
               role: 'assistant',
-              content: response.content[0].type === 'text' ? response.content[0].text : '',
+              content: data.content[0].type === 'text' ? data.content[0].text : '',
             },
-            finish_reason: response.stop_reason === 'end_turn' ? 'stop' : 'length',
+            finish_reason: data.stop_reason === 'end_turn' ? 'stop' : 'length',
           },
         ],
         usage: {
-          prompt_tokens: response.usage.input_tokens,
-          completion_tokens: response.usage.output_tokens,
-          total_tokens: response.usage.input_tokens + response.usage.output_tokens,
+          prompt_tokens: data.usage.input_tokens,
+          completion_tokens: data.usage.output_tokens,
+          total_tokens: data.usage.input_tokens + data.usage.output_tokens,
         },
       };
 
@@ -80,57 +104,112 @@ export class ClaudeProvider implements Provider {
       const claudeModel = mapModelName(request.model);
       const { system, messages } = convertMessages(request.messages);
 
+      const baseUrl = config.anthropicBaseUrl || 'https://api.anthropic.com';
+      const url = `${baseUrl}/v1/messages`;
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+      };
+
+      headers['x-api-key'] = config.anthropicApiKey;
+
+      const body: any = {
+        model: claudeModel,
+        max_tokens: request.max_tokens || 4096,
+        messages,
+        stream: true,
+      };
+
+      if (system) {
+        body.system = system;
+      }
+
+      if (request.temperature !== undefined) {
+        body.temperature = request.temperature;
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`${response.status} ${errorText}`);
+      }
+
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
 
-      const stream = await anthropic.messages.stream({
-        model: claudeModel,
-        max_tokens: request.max_tokens || 4096,
-        temperature: request.temperature,
-        system,
-        messages,
-      });
+      let buffer = '';
 
-      const id = `chatcmpl-${Date.now()}`;
-      const created = Math.floor(Date.now() / 1000);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-          const chunk = {
-            id,
-            object: 'chat.completion.chunk',
-            created,
-            model: request.model,
-            choices: [
-              {
-                index: 0,
-                delta: {
-                  content: event.delta.text,
-                },
-                finish_reason: null,
-              },
-            ],
-          };
-          res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-        }
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
-        if (event.type === 'message_stop') {
-          const finalChunk = {
-            id,
-            object: 'chat.completion.chunk',
-            created,
-            model: request.model,
-            choices: [
-              {
-                index: 0,
-                delta: {},
-                finish_reason: 'stop',
-              },
-            ],
-          };
-          res.write(`data: ${JSON.stringify(finalChunk)}\n\n`);
-          res.write('data: [DONE]\n\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') {
+              res.write('data: [DONE]\n\n');
+              continue;
+            }
+
+            try {
+              const parsed = JSON.parse(data);
+
+              if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                const chunk = {
+                  id: parsed.id || 'chatcmpl-' + Date.now(),
+                  object: 'chat.completion.chunk',
+                  created: Math.floor(Date.now() / 1000),
+                  model: request.model,
+                  choices: [
+                    {
+                      index: 0,
+                      delta: {
+                        content: parsed.delta.text,
+                      },
+                      finish_reason: null,
+                    },
+                  ],
+                };
+                res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+              } else if (parsed.type === 'message_stop') {
+                const chunk = {
+                  id: 'chatcmpl-' + Date.now(),
+                  object: 'chat.completion.chunk',
+                  created: Math.floor(Date.now() / 1000),
+                  model: request.model,
+                  choices: [
+                    {
+                      index: 0,
+                      delta: {},
+                      finish_reason: 'stop',
+                    },
+                  ],
+                };
+                res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+                res.write('data: [DONE]\n\n');
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
         }
       }
 
@@ -141,24 +220,9 @@ export class ClaudeProvider implements Provider {
   }
 
   private normalizeError(error: any): Error {
-    const normalized: any = new Error(error.message || 'Unknown error');
-
-    if (error.status) {
-      normalized.status = error.status;
-    } else if (error.statusCode) {
-      normalized.status = error.statusCode;
+    if (error.message) {
+      return new Error(error.message);
     }
-
-    if (error.error?.type === 'invalid_request_error') {
-      normalized.status = 400;
-    } else if (error.error?.type === 'authentication_error') {
-      normalized.status = 401;
-    } else if (error.error?.type === 'permission_error') {
-      normalized.status = 403;
-    } else if (error.error?.type === 'rate_limit_error') {
-      normalized.status = 429;
-    }
-
-    return normalized;
+    return new Error('Unknown error occurred');
   }
 }

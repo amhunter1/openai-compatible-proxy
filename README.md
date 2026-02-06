@@ -1,65 +1,46 @@
-# 🔄 OpenAI-Compatible Proxy
+# OpenAI-Compatible Proxy for Claude (Loratech)
 
-> **Use Claude (or any LLM) with OpenAI's API format. Zero code changes required.**
+A lightweight proxy server that converts OpenAI API requests to Claude API format, specifically designed to work with Loratech's Claude API endpoint.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
-[![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+## Features
 
-## 🎯 What is this?
+- ✅ OpenAI-compatible `/v1/chat/completions` endpoint
+- ✅ Streaming support
+- ✅ Works with Loratech API (`https://api.loratech.dev`)
+- ✅ Model mapping (gpt-4 → claude-3-5-sonnet, etc.)
+- ✅ System message handling
+- ✅ Usage statistics
 
-A lightweight proxy server that translates OpenAI API requests to other LLM providers. Drop-in replacement for `api.openai.com` - no code changes needed.
-
-**Perfect for:**
-- 🔌 Using Claude in OpenAI-compatible tools
-- 🔄 Switching between providers without refactoring
-- 🧪 Testing different models with the same codebase
-- 💰 Cost optimization by provider switching
-
-## ✨ Why use it?
-
-- **Zero Integration Work** - Works with any OpenAI SDK/library
-- **Streaming Support** - Full SSE streaming for real-time responses
-- **Provider Agnostic** - Switch providers via environment variable
-- **Production Ready** - Docker support, error handling, validation
-- **Type Safe** - Built with TypeScript
-
-## 🚀 Supported Providers
-
-| Provider | Status | Models |
-|----------|--------|--------|
-| **Claude** (Anthropic) | ✅ Default
-| **OpenAI** | ✅ Pass-through
-
-## 🐳 Quick Start (Docker)
-
-```bash
-# Clone the repository
-git clone https://github.com/amhunter1/openai-compatible-proxy.git
-cd openai-compatible-proxy
-
-# Set your API keys
-export ANTHROPIC_API_KEY=sk-ant-xxxxx
-export OPENAI_API_KEY=sk-xxxxx
-
-# Run with Docker Compose
-docker-compose up -d
-```
-
-Server runs on `http://localhost:3000`
-
-## 📦 Manual Installation
+## Installation
 
 ```bash
 npm install
-cp .env.example .env
-# Edit .env with your API keys
+```
+
+## Configuration
+
+Create a `.env` file:
+
+```env
+PORT=3000
+PROVIDER=claude
+ANTHROPIC_API_KEY=your_loratech_api_key_here
+ANTHROPIC_BASE_URL=https://api.loratech.dev
+```
+
+## Usage
+
+Start the server:
+
+```bash
 npm run dev
 ```
 
-## 💻 Usage
+The proxy will be available at `http://localhost:3000`
 
-### Basic Request
+## API Example
+
+### Non-streaming request:
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -72,7 +53,7 @@ curl http://localhost:3000/v1/chat/completions \
   }'
 ```
 
-### Streaming Request
+### Streaming request:
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -80,145 +61,33 @@ curl http://localhost:3000/v1/chat/completions \
   -d '{
     "model": "gpt-4",
     "messages": [
-      {"role": "user", "content": "Count to 10"}
+      {"role": "user", "content": "Count from 1 to 10"}
     ],
     "stream": true
   }'
 ```
 
-### With OpenAI SDK
+## Model Mapping
 
-```javascript
-import OpenAI from 'openai';
+| OpenAI Model | Claude Model |
+|-------------|--------------|
+| gpt-4 | claude-3-5-sonnet-20241022 |
+| gpt-4-turbo | claude-3-5-sonnet-20241022 |
+| gpt-3.5-turbo | claude-3-5-haiku-20241022 |
 
-const client = new OpenAI({
-  baseURL: 'http://localhost:3000/v1',
-  apiKey: 'not-needed', // Proxy handles auth
-});
+## Use Cases
 
-const response = await client.chat.completions.create({
-  model: 'gpt-4',
-  messages: [{ role: 'user', content: 'Hello!' }],
-});
-```
+- Use Claude with OpenAI-compatible tools
+- Integrate Claude into existing OpenAI workflows
+- Test Claude responses with OpenAI client libraries
 
-### Python Example
+## Technical Details
 
-```python
-from openai import OpenAI
+- Built with Express.js and TypeScript
+- Direct fetch-based implementation (no SDK dependencies)
+- Proper header handling for Loratech API (`x-api-key`)
+- SSE (Server-Sent Events) for streaming
 
-client = OpenAI(
-    base_url="http://localhost:3000/v1",
-    api_key="not-needed"
-)
+## License
 
-response = client.chat.completions.create(
-    model="gpt-4",
-    messages=[{"role": "user", "content": "Hello!"}]
-)
-```
-
-## ⚙️ Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `PORT` | No | `3000` | Server port |
-| `PROVIDER` | No | `claude` | Provider to use (`claude` or `openai`) |
-| `ANTHROPIC_API_KEY` | Yes* | - | Anthropic API key |
-| `OPENAI_API_KEY` | Yes* | - | OpenAI API key |
-| `ANTHROPIC_BASE_URL` | No | - | Custom Anthropic API base URL |
-| `OPENAI_BASE_URL` | No | - | Custom OpenAI API base URL |
-
-*Required based on selected provider
-
-## 🎛️ Switching Providers
-
-Change the `PROVIDER` environment variable:
-
-```bash
-# Use Claude (default)
-PROVIDER=claude docker-compose up
-
-# Use OpenAI
-PROVIDER=openai docker-compose up
-```
-
-### Custom Base URLs
-
-You can use custom API endpoints (useful for proxies, local deployments, or alternative endpoints):
-
-```bash
-# Use a custom Anthropic endpoint
-ANTHROPIC_BASE_URL=https://your-proxy.com docker-compose up
-
-# Use a custom OpenAI endpoint
-OPENAI_BASE_URL=https://your-openai-proxy.com/v1 docker-compose up
-```
-
-## 📡 API Endpoints
-
-- `POST /v1/chat/completions` - Chat completions (streaming & non-streaming)
-- `GET /v1/models` - List available models
-
-## 🔧 Model Mapping
-
-When using Claude provider:
-
-| OpenAI Model | Maps to Claude Model |
-|--------------|---------------------|
-| `gpt-4` | `claude-3-5-sonnet-20241022` |
-| `gpt-4-turbo` | `claude-3-5-sonnet-20241022` |
-| `gpt-3.5-turbo` | `claude-3-5-haiku-20241022` |
-
-## 🛡️ Error Handling
-
-All errors are normalized to OpenAI's error format:
-
-```json
-{
-  "error": {
-    "message": "Invalid request",
-    "type": "invalid_request_error"
-  }
-}
-```
-
-## 🏗️ Architecture
-
-```
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   Client    │─────▶│    Proxy     │─────▶│   Claude    │
-│ (OpenAI SDK)│      │  (Adapter)   │      │     API     │
-└─────────────┘      └──────────────┘      └─────────────┘
-                            │
-                            └──────────────▶┌─────────────┐
-                                            │   OpenAI    │
-                                            │     API     │
-                                            └─────────────┘
-```
-
-## 🚀 Production Deployment
-
-### Docker
-
-```bash
-docker build -t openai-proxy .
-docker run -p 3000:3000 \
-  -e ANTHROPIC_API_KEY=sk-ant-xxxxx \
-  -e PROVIDER=claude \
-  openai-proxy
-```
-
-### Docker Compose
-
-```bash
-docker-compose up -d
-```
-
-## 🤝 Contributing
-
-Contributions welcome! Please open an issue or PR.
-
-## ⭐ Star History
-
-If this project helped you, please consider giving it a star! It helps others discover the project.
+MIT
