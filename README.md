@@ -28,8 +28,8 @@ A lightweight proxy server that translates OpenAI API requests to other LLM prov
 
 | Provider | Status | Models |
 |----------|--------|--------|
-| **Claude** (Anthropic) | ✅ Default | claude-3-5-sonnet, claude-3-5-haiku |
-| **OpenAI** | ✅ Pass-through | gpt-4o, gpt-4-turbo, gpt-3.5-turbo |
+| **Claude** (Anthropic) | ✅ Default
+| **OpenAI** | ✅ Pass-through
 
 ## 🐳 Quick Start (Docker)
 
