@@ -1,22 +1,27 @@
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
-RUN npm run build
-
 FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
+
+# Install dependencies
 RUN npm ci --only=production
 
-COPY --from=builder /app/dist ./dist
+# Copy source code
+COPY . .
 
+# Build TypeScript
+RUN npm run build
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Expose port
 EXPOSE 3000
 
-CMD ["node", "dist/server.js"]
+# Set environment variables
+ENV NODE_ENV=production
+
+# Start the application
+CMD ["node", "dist/index.js"]

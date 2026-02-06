@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { getProvider } from '../providers/factory';
 import { handleError } from '../utils/error-handler';
 import { validateChatRequest } from '../utils/validation';
+import { config } from '../config';
 
 const router = Router();
 
@@ -26,7 +27,7 @@ router.post('/v1/chat/completions', async (req: Request, res: Response) => {
       res.json(response);
     }
   } catch (error: any) {
-    handleError(error, res);
+    handleError(error, res, config.provider);
   }
 });
 
