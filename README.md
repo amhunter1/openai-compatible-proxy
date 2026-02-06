@@ -532,13 +532,6 @@ MIT License - see LICENSE file for details
 - [Cohere API](https://docs.cohere.com/)
 - [Perplexity API](https://docs.perplexity.ai/)
 
-## 📞 Support
-
-For issues, questions, or contributions:
-- GitHub Issues: [Create an issue](https://github.com/amhunter1/openai-compatible-proxy/issues)
-- Documentation: See this README
-- Email: [Your contact email]
-
 ---
 
 **Note:** This proxy is not officially affiliated with OpenAI, Anthropic, Google, xAI, Mistral AI, Cohere, or Perplexity. It is an independent project that provides compatibility between different AI provider APIs.
