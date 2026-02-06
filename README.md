@@ -126,6 +126,8 @@ response = client.chat.completions.create(
 | `PROVIDER` | No | `claude` | Provider to use (`claude` or `openai`) |
 | `ANTHROPIC_API_KEY` | Yes* | - | Anthropic API key |
 | `OPENAI_API_KEY` | Yes* | - | OpenAI API key |
+| `ANTHROPIC_BASE_URL` | No | - | Custom Anthropic API base URL |
+| `OPENAI_BASE_URL` | No | - | Custom OpenAI API base URL |
 
 *Required based on selected provider
 
@@ -139,6 +141,18 @@ PROVIDER=claude docker-compose up
 
 # Use OpenAI
 PROVIDER=openai docker-compose up
+```
+
+### Custom Base URLs
+
+You can use custom API endpoints (useful for proxies, local deployments, or alternative endpoints):
+
+```bash
+# Use a custom Anthropic endpoint
+ANTHROPIC_BASE_URL=https://your-proxy.com docker-compose up
+
+# Use a custom OpenAI endpoint
+OPENAI_BASE_URL=https://your-openai-proxy.com/v1 docker-compose up
 ```
 
 ## 📡 API Endpoints

@@ -5,6 +5,7 @@ import { Provider, OpenAIRequest, OpenAIResponse } from '../types/provider';
 
 const openai = new OpenAI({
   apiKey: config.openaiApiKey,
+  baseURL: config.openaiBaseUrl,
 });
 
 export class OpenAIProvider implements Provider {

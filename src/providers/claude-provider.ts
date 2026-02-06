@@ -5,6 +5,7 @@ import { Provider, OpenAIRequest, OpenAIResponse, OpenAIMessage } from '../types
 
 const anthropic = new Anthropic({
   apiKey: config.anthropicApiKey,
+  baseURL: config.anthropicBaseUrl,
 });
 
 const mapModelName = (openaiModel: string): string => {
