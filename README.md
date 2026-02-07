@@ -536,4 +536,4 @@ MIT License - see LICENSE file for details
 
 **Note:** This proxy is not officially affiliated with OpenAI, Anthropic, Google, xAI, Mistral AI, Cohere, or Perplexity. It is an independent project that provides compatibility between different AI provider APIs.
 
-**Last Updated:** February 6, 2026
+**Last Updated:** February 7, 2026

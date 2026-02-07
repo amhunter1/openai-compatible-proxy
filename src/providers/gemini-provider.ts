@@ -5,11 +5,11 @@ import { parseProviderError } from '../utils/error-handler';
 
 const mapModelName = (openaiModel: string): string => {
   const modelMap: Record<string, string> = {
-    'gpt-4': 'gemini-1.5-pro',
-    'gpt-4-turbo': 'gemini-1.5-pro',
-    'gpt-3.5-turbo': 'gemini-1.5-flash',
+    'gpt-4': 'gemini-3-pro-preview',
+    'gpt-4-turbo': 'gemini-3-flash-preview',
+    'gpt-3.5-turbo': 'gemini-2.5-flash',
   };
-  return modelMap[openaiModel] || 'gemini-1.5-pro';
+  return modelMap[openaiModel] || 'gemini-3-pro-preview';
 };
 
 const convertMessages = (messages: OpenAIMessage[]): any[] => {

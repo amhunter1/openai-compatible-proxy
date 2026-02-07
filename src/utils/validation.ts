@@ -22,8 +22,13 @@ export const validateChatRequest = (body: any): string | null => {
     if (!msg.role) {
       return `messages[${i}]: Missing required field 'role'`;
     }
-    if (!msg.content) {
+    // content can be empty string, but must exist (string or array for vision)
+    if (msg.content === undefined && msg.content === null) {
       return `messages[${i}]: Missing required field 'content'`;
+    }
+    // Validate content type (string or array for vision support)
+    if (typeof msg.content !== 'string' && !Array.isArray(msg.content)) {
+      return `messages[${i}]: content must be string or array`;
     }
   }
 

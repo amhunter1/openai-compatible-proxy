@@ -4,11 +4,11 @@ import { Provider, OpenAIRequest, OpenAIResponse, OpenAIMessage } from '../types
 
 const mapModelName = (openaiModel: string): string => {
   const modelMap: Record<string, string> = {
-    'gpt-4': 'claude-3-5-sonnet-20241022',
-    'gpt-4-turbo': 'claude-3-5-sonnet-20241022',
-    'gpt-3.5-turbo': 'claude-3-5-haiku-20241022',
+    'gpt-4': 'claude-opus-4-6',
+    'gpt-4-turbo': 'claude-sonnet-4-5-20250929',
+    'gpt-3.5-turbo': 'claude-haiku-4-5-20251001',
   };
-  return modelMap[openaiModel] || 'claude-3-5-sonnet-20241022';
+  return modelMap[openaiModel] || 'claude-opus-4-6';
 };
 
 const convertMessages = (messages: OpenAIMessage[]): { system?: string; messages: any[] } => {

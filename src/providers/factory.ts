@@ -7,6 +7,7 @@ import { MistralProvider } from './mistral-provider';
 import { CohereProvider } from './cohere-provider';
 import { PerplexityProvider } from './perplexity-provider';
 import { config } from '../config';
+import { logger } from '../utils/logger';
 
 export const getProvider = (): Provider => {
   const providerType = config.provider.toLowerCase();
@@ -28,7 +29,9 @@ export const getProvider = (): Provider => {
       return new PerplexityProvider();
     case 'claude':
     case 'anthropic':
+      return new ClaudeProvider();
     default:
+      logger.warn(`Unknown provider: ${providerType}, falling back to Claude`);
       return new ClaudeProvider();
   }
 };

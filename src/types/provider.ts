@@ -1,8 +1,15 @@
 import { Response } from 'express';
 
+// Content part for Vision support
+export interface ContentPart {
+  type: 'text' | 'image_url';
+  text?: string;
+  image_url?: { url: string };
+}
+
 export interface OpenAIMessage {
-  role: string;
-  content: string;
+  role: 'system' | 'user' | 'assistant';
+  content: string | ContentPart[];
 }
 
 export interface OpenAIRequest {

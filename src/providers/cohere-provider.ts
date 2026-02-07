@@ -12,6 +12,20 @@ const mapModelName = (openaiModel: string): string => {
   return modelMap[openaiModel] || 'command-r-plus';
 };
 
+// Helper to extract text from content (string or array for vision)
+const getTextContent = (content: string | any[]): string => {
+  if (typeof content === 'string') {
+    return content;
+  }
+  if (Array.isArray(content)) {
+    return content
+      .filter(part => part.type === 'text')
+      .map(part => part.text || '')
+      .join('\n');
+  }
+  return '';
+};
+
 const convertMessages = (messages: OpenAIMessage[]): { message: string; chatHistory?: any[] } => {
   if (messages.length === 0) {
     return { message: '' };
@@ -20,11 +34,11 @@ const convertMessages = (messages: OpenAIMessage[]): { message: string; chatHist
   const lastMessage = messages[messages.length - 1];
   const chatHistory = messages.slice(0, -1).map(msg => ({
     role: msg.role === 'assistant' ? 'CHATBOT' : 'USER',
-    message: msg.content,
+    message: getTextContent(msg.content),
   }));
 
   return {
-    message: lastMessage.content,
+    message: getTextContent(lastMessage.content),
     chatHistory: chatHistory.length > 0 ? chatHistory : undefined,
   };
 };
